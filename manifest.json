@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Workday Autofill",
+  "description": "A Chrome extension to autofill Workday forms.",
+  "version": "1.0.0",
+  "host_permissions": [
+    "*://*.myworkdayjobs.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Workday Autofill"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.myworkdayjobs.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
