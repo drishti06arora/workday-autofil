@@ -52,6 +52,59 @@ const buildContextSelector = (element) => {
   return path.join(' > ');
 };
 
+const normalizeFieldKey = (value = '') =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/(^|[^a-z0-9])+/g, ' ')
+    .replace(/\b\d+\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normalizeDynamicId = (value = '') =>
+  value
+    .toString()
+    .trim()
+    .replace(/(^|[-_])\d+([_-]|$)/g, '$1$2')
+    .replace(/[-_]{2,}/g, '--')
+    .replace(/(^[-_]+|[-_]+$)/g, '');
+
+const isElementVisible = (element) => {
+  if (!element || !(element instanceof Element)) return false;
+  const style = window.getComputedStyle(element);
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+    return false;
+  }
+  const rect = element.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+};
+
+const autoExpandDynamicSections = () => {
+  const candidateSelectors = [
+    'button',
+    'input[type="button"]',
+    'input[type="submit"]',
+    '[role="button"]',
+    'a',
+  ];
+
+  const buttons = Array.from(document.querySelectorAll(candidateSelectors.join(','))).filter((element) => {
+    if (!isElementVisible(element)) return false;
+    if (element.disabled) return false;
+
+    const text = (element.textContent || element.value || '').toString().trim();
+    return /\badd\b/i.test(text) || /\badd another\b/i.test(text) || /\badd experience\b/i.test(text) || /\badd education\b/i.test(text);
+  });
+
+  buttons.forEach((button) => {
+    if (!button.dataset.workdayAutoClicked) {
+      button.dataset.workdayAutoClicked = 'true';
+      button.click();
+    }
+  });
+};
+
 const normalizeValue = (element) => {
   if (!element) return '';
 
@@ -66,17 +119,10 @@ const normalizeValue = (element) => {
   return element.value ?? '';
 };
 
-const isElementVisible = (element) => {
-  if (!element || !(element instanceof Element)) return false;
-  const style = window.getComputedStyle(element);
-  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
-    return false;
-  }
-  const rect = element.getBoundingClientRect();
-  return rect.width > 0 && rect.height > 0;
-};
+const extractWorkdayFields = async () => {
+  autoExpandDynamicSections();
+  await new Promise((resolve) => setTimeout(resolve, 180));
 
-const extractWorkdayFields = () => {
   const fieldElements = Array.from(
     document.querySelectorAll('input, textarea, select, [contenteditable="true"]')
   ).filter((el) => {
@@ -86,21 +132,31 @@ const extractWorkdayFields = () => {
     return isElementVisible(el);
   });
 
-  return fieldElements.map((element) => ({
-    id: element.id || null,
-    name: element.name || null,
-    type:
-      element.tagName.toLowerCase() === 'input'
-        ? element.type || 'text'
-        : element.tagName.toLowerCase() === 'div' && element.getAttribute('contenteditable') === 'true'
-        ? 'contenteditable'
-        : element.tagName.toLowerCase(),
-    label: getElementLabel(element) || null,
-    placeholder: element.getAttribute('placeholder') || null,
-    value: normalizeValue(element),
-    selector: buildContextSelector(element),
-    required: element.required || false,
-    disabled: element.disabled || false,
-    readonly: element.readOnly || false,
-  }));
+  return fieldElements.map((element) => {
+    const id = element.id || null;
+    const name = element.name || null;
+    const label = getElementLabel(element) || null;
+    const placeholder = element.getAttribute('placeholder') || null;
+    const normalizedId = normalizeDynamicId(id || name || label || placeholder || '');
+
+    return {
+      id,
+      name,
+      normalizedId,
+      type:
+        element.tagName.toLowerCase() === 'input'
+          ? element.type || 'text'
+          : element.tagName.toLowerCase() === 'div' && element.getAttribute('contenteditable') === 'true'
+          ? 'contenteditable'
+          : element.tagName.toLowerCase(),
+      label,
+      placeholder,
+      value: normalizeValue(element),
+      selector: buildContextSelector(element),
+      required: element.required || false,
+      disabled: element.disabled || false,
+      readonly: element.readOnly || false,
+      baseKey: normalizeFieldKey(`${normalizedId} ${name || ''} ${label || ''} ${placeholder || ''}`),
+    };
+  });
 };

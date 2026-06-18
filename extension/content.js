@@ -6,7 +6,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || !message.type) return;
 
   if (message.type === 'GET_FIELDS') {
-    sendResponse(extractWorkdayFields());
+    extractWorkdayFields()
+      .then((fields) => sendResponse(fields))
+      .catch((error) => {
+        console.error('Error extracting fields:', error);
+        sendResponse([]);
+      });
     return true;
   }
 

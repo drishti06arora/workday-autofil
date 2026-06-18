@@ -11,7 +11,7 @@ const createFloatingButton = () => {
   button.textContent = 'Extract Workday Fields';
   button.style.position = 'fixed';
   button.style.bottom = '24px';
-  button.style.right = '24px';
+  button.style.left = '24px';
   button.style.padding = '12px 16px';
   button.style.zIndex = '999999';
   button.style.border = '1px solid rgba(255,255,255,0.18)';
@@ -43,7 +43,7 @@ const createFloatingButton = () => {
 
     try {
       // Extract fields
-      const fields = extractWorkdayFields();
+      const fields = await extractWorkdayFields();
       console.log('Extracted Workday fields:', fields);
 
       if (!fields.length) {
