@@ -4,7 +4,8 @@
   "description": "A Chrome extension to autofill Workday forms.",
   "version": "1.0.0",
   "host_permissions": [
-    "*://*.myworkdayjobs.com/*"
+    "*://*.myworkdayjobs.com/*",
+    "http://127.0.0.1/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -19,7 +20,12 @@
       "matches": [
         "*://*.myworkdayjobs.com/*"
       ],
-      "js": ["content.js"],
+      "js": [
+        "extraction.js",
+        "agent-client.js",
+        "ui.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ]

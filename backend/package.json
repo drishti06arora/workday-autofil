@@ -1,0 +1,13 @@
+{
+  "name": "workday-autofill-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local agent for Workday Autofill Chrome extension",
+  "main": "local-agent.js",
+  "scripts": {
+    "start": "node local-agent.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
