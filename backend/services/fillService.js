@@ -58,6 +58,12 @@ function chooseValue(field, experienceOrder = []) {
     const profile = repository.getExperienceProfile(field, experienceOrder);
     const fieldType = getWorkExperienceFieldType(field);
     if (profile && fieldType) {
+      if (fieldType === 'jobTitle') {
+        return profile.title;
+      }
+      if (fieldType === 'companyName') {
+        return profile.company;
+      }
       return profile[fieldType];
     }
   }

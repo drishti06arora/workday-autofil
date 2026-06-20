@@ -77,13 +77,20 @@ function getWorkExperienceInstanceId(field) {
 }
 
 function buildWorkExperienceOrder(fields) {
-  return Array.from(
-    new Set(
-      fields
-        .map(getWorkExperienceInstanceId)
-        .filter((id) => id !== null)
-    )
-  ).sort((a, b) => b - a);
+  const seen = new Set();
+  const ids = [];
+
+  for (const field of fields) {
+    const id = getWorkExperienceInstanceId(field);
+    if (id === null || seen.has(id)) {
+      continue;
+    }
+
+    seen.add(id);
+    ids.push(id);
+  }
+
+  return ids;
 }
 
 function isWorkExperienceField(field) {
