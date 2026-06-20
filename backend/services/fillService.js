@@ -7,11 +7,21 @@ const {
   buildWorkExperienceOrder,
   isWorkExperienceField,
   getWorkExperienceFieldType,
+  getEducationInstanceId,
+  buildEducationOrder,
+  isEducationField,
+  getEducationFieldType,
+  getWorkExperienceInstanceId,
+  isLinkedInAccountField,
 } = require('../utils/fieldUtils');
 
 const repository = new FieldMappingRepository();
 
-function chooseValue(field, experienceOrder = []) {
+/**
+ * Determine the best autofill value for a single form field.
+ * Uses field metadata, mappings, expected values, and work experience order to choose a fill value.
+ */
+function chooseValue(field, experienceOrder = [], educationOrder = []) {
   if (!field || field.type === 'file') {
     return null;
   }
@@ -68,6 +78,18 @@ function chooseValue(field, experienceOrder = []) {
     }
   }
 
+  if (isEducationField(field)) {
+    const profile = repository.getEducationProfile(field, educationOrder);
+    const fieldType = getEducationFieldType(field);
+    if (profile && fieldType) {
+      return profile[fieldType];
+    }
+  }
+
+  if (isLinkedInAccountField(field)) {
+    return repository.findExpectedValue(['socialnetworkaccounts', 'linkedinaccount', 'linkedin']);
+  }
+
   const expectedValue = repository.findExpectedValue(searchTexts);
   if (expectedValue) {
     return expectedValue;
@@ -81,18 +103,44 @@ function chooseValue(field, experienceOrder = []) {
   return null;
 }
 
+/**
+ * Build the response payload for a batch of form fields.
+ * Returns a map of selector => value along with a summary of requested and recommended fields.
+ */
 function fillFields(fields) {
   if (!Array.isArray(fields)) {
     throw new Error('`fields` must be an array');
   }
 
   const experienceOrder = buildWorkExperienceOrder(fields);
+  const allowedWorkExperienceIds = new Set(
+    experienceOrder.slice(0, repository.getExperienceProfileCount())
+  );
+
+  const educationOrder = buildEducationOrder(fields);
+  const allowedEducationIds = new Set(
+    educationOrder.slice(0, repository.getEducationProfileCount())
+  );
+
   const fills = fields.reduce((acc, field) => {
+    if (isWorkExperienceField(field)) {
+      const workExperienceId = getWorkExperienceInstanceId(field);
+      if (workExperienceId !== null && !allowedWorkExperienceIds.has(workExperienceId)) {
+        return acc;
+      }
+    }
+
+    if (isEducationField(field)) {
+      const educationId = getEducationInstanceId(field);
+      if (educationId !== null && !allowedEducationIds.has(educationId)) {
+        return acc;
+      }
+    }
     if (!field.selector) {
       return acc;
     }
 
-    const value = chooseValue(field, experienceOrder);
+    const value = chooseValue(field, experienceOrder, educationOrder);
     if (value !== null && value !== undefined) {
       acc[field.selector] = value;
     }

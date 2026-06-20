@@ -1,3 +1,7 @@
+/**
+ * Send a JSON response with appropriate CORS headers.
+ * Serializes the payload and ends the HTTP response.
+ */
 function sendJson(res, statusCode, data) {
   const body = JSON.stringify(data, null, 2);
 
@@ -11,6 +15,10 @@ function sendJson(res, statusCode, data) {
   res.end(body);
 }
 
+/**
+ * Parse the request body as JSON.
+ * Returns a promise that resolves with the parsed payload or rejects on invalid JSON.
+ */
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
