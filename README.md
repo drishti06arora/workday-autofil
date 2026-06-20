@@ -15,9 +15,19 @@ workday-autofil/
 │   ├── agent-client.js     # Agent communication & filling
 │   └── ui.js               # Floating button UI & orchestration
 ├── backend/                # Local agent server
-│   ├── local-agent.js      # HTTP server & field processing
-│   └── package.json        # Node dependencies
+│   ├── controllers/        # HTTP request handling
+│   │   └── fillController.js
+│   ├── services/           # Business logic and field fill strategy
+│   │   └── fillService.js
+│   ├── utils/              # Reusable helpers
+│   │   ├── httpUtils.js
+│   │   └── fieldUtils.js
+│   ├── database/           # In-memory mapping repository
+│   │   └── fieldMappingRepository.js
+│   ├── local-agent.js      # Server bootstrap
+│   └── package.json        # Node project config
 └── README.md               # This file
+└── DEVLOG.md               # Developers Log
 ```
 
 ## Installation
