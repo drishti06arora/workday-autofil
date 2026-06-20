@@ -1,6 +1,11 @@
 const { sendJson, parseJsonBody } = require('../utils/httpUtils');
 const { fillFields } = require('../services/fillService');
 
+/**
+ * Handle all incoming HTTP requests for the local agent.
+ * Supports OPTIONS for CORS, GET /ping for health checks, and POST /fill for field autofill requests.
+ * Replies with JSON responses and appropriate HTTP status codes.
+ */
 async function handleRequest(req, res) {
   console.log('🔥 REQUEST RECEIVED');
 

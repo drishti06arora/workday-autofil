@@ -1,3 +1,7 @@
+/**
+ * Local agent HTTP server entrypoint.
+ * Listens for requests from the browser extension and forwards them to the request handler.
+ */
 const http = require('http');
 const { handleRequest } = require('./controllers/fillController');
 
